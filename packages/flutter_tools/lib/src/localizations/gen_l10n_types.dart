@@ -229,13 +229,41 @@ class OptionalParameter {
 //   }
 // }
 //
+// A placeholder `name` and `optionalParameters` key become a Dart identifier,
+// and `type` becomes a Dart type, in the generated localizations source. They
+// are restricted to identifier / simple-type-expression characters so that a
+// crafted .arb file cannot inject arbitrary Dart into the generated code.
+final RegExp _placeholderIdentifierPattern = RegExp(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$');
+final RegExp _placeholderTypePattern = RegExp(r'^[a-zA-Z_$][a-zA-Z0-9_$<>, ]*$');
+
 class Placeholder {
   Placeholder(this.resourceId, this.name, Map<String, Object?> attributes)
     : example = _stringAttribute(resourceId, name, attributes, 'example'),
       type = _stringAttribute(resourceId, name, attributes, 'type'),
       format = _stringAttribute(resourceId, name, attributes, 'format'),
       optionalParameters = _optionalParameters(resourceId, name, attributes),
-      isCustomDateFormat = _boolAttribute(resourceId, name, attributes, 'isCustomDateFormat');
+      isCustomDateFormat = _boolAttribute(resourceId, name, attributes, 'isCustomDateFormat') {
+    if (!_placeholderIdentifierPattern.hasMatch(name)) {
+      throw L10nException(
+        'The placeholder name "$name" in message "$resourceId" is not a valid Dart identifier.',
+      );
+    }
+    final String? placeholderType = type;
+    if (placeholderType != null && !_placeholderTypePattern.hasMatch(placeholderType)) {
+      throw L10nException(
+        'The "type" ("$placeholderType") of placeholder "$name" in message "$resourceId" '
+        'is not a valid Dart type.',
+      );
+    }
+    for (final OptionalParameter parameter in optionalParameters) {
+      if (!_placeholderIdentifierPattern.hasMatch(parameter.name)) {
+        throw L10nException(
+          'The optional parameter name "${parameter.name}" of placeholder "$name" in message '
+          '"$resourceId" is not a valid Dart identifier.',
+        );
+      }
+    }
+  }
 
   final String resourceId;
   final String name;

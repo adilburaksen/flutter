@@ -1329,6 +1329,45 @@ class AppLocalizationsEn extends AppLocalizations {
       );
     });
 
+    testWithoutContext('throws when a placeholder type contains injection characters', () {
+      const arbFileString = '''
+{
+  "hello": "Hello {x}",
+  "@hello": {
+    "placeholders": {
+      "x": {
+        "type": "Object x) { throwOops(); } String pwn(Object"
+      }
+    }
+  }
+}''';
+
+      final Directory l10nDirectory =
+          fs.currentDirectory.childDirectory('lib').childDirectory('l10n')
+            ..createSync(recursive: true);
+      l10nDirectory.childFile('app_en.arb').writeAsStringSync(arbFileString);
+
+      expect(
+        () => LocalizationsGenerator(
+          fileSystem: fs,
+          inputPathString: defaultL10nPath,
+          outputPathString: defaultL10nPath,
+          templateArbFileName: 'app_en.arb',
+          outputFileString: defaultOutputFileString,
+          classNameString: defaultClassNameString,
+          logger: logger,
+          projectPathString: fs.currentDirectory.path,
+        ).loadResources(),
+        throwsA(
+          isA<L10nException>().having(
+            (L10nException e) => e.message,
+            'message',
+            contains('is not a valid Dart type'),
+          ),
+        ),
+      );
+    });
+
     testWithoutContext('throws when the same locale is detected more than once', () {
       const secondMessageArbFileString = '''
 {
