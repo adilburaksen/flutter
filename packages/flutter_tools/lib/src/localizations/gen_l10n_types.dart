@@ -229,10 +229,10 @@ class OptionalParameter {
 //   }
 // }
 //
-// A placeholder `name` and `optionalParameters` key become a Dart identifier,
-// and `type` becomes a Dart type, in the generated localizations source. They
-// are restricted to identifier / simple-type-expression characters so that a
-// crafted .arb file cannot inject arbitrary Dart into the generated code.
+/// A placeholder `name` and `optionalParameters` key become a Dart identifier,
+/// and `type` becomes a Dart type, in the generated localizations source. They
+/// are restricted to identifier / simple-type-expression characters so that a
+/// crafted .arb file cannot inject arbitrary Dart into the generated code.
 final RegExp _placeholderIdentifierPattern = RegExp(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$');
 final RegExp _placeholderTypePattern = RegExp(r'^[a-zA-Z_$][a-zA-Z0-9_$<>, ]*$');
 
